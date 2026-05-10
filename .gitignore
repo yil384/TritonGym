@@ -3,6 +3,10 @@ generated_code*/
 logs*/
 attempts/
 
+# Runtime state for the website
+web/submissions.db
+web/venv/
+
 # Paper source kept locally only
 3520_TritonGym_A_Benchmark_for.pdf
 triton_benchmark_25.zip

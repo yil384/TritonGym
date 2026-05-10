@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit a Model · TritonGym</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-row">
+    <a class="brand" href="index.html"><span class="brand-logo">⚙️</span><span class="brand-name">TritonGym</span></a>
+    <nav class="nav">
+      <a href="index.html#leaderboard">Leaderboard</a>
+      <a href="index.html#dataset">Dataset</a>
+      <a href="index.html#workflows">Agents</a>
+      <a href="index.html#paper">Paper</a>
+      <a href="submit.html">Submit</a>
+      <a class="nav-gh" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero hero-tight">
+    <div class="container">
+      <h1>Submit a Model</h1>
+      <p class="tagline">Add your model to the TritonGym leaderboard.</p>
+    </div>
+  </section>
+
+  <section class="container section">
+    <div class="grid-2">
+
+      <!-- ─────── Option A: HF model ─────── -->
+      <div class="submit-card">
+        <h2>HuggingFace model</h2>
+        <p class="section-desc">
+          Submit a public HuggingFace model id and we'll run TritonGym on it as
+          GPU time becomes available. Best for open-weight models served via
+          vLLM/sglang. Closed-API models — submit via Option B (we don't
+          handle your API key).
+        </p>
+
+        <form id="submit-form">
+          <label class="field">
+            <span class="field-label">HF model id <span class="req">*</span></span>
+            <input type="text" name="hf_model" required
+                   placeholder="meta-llama/Llama-3.1-70B-Instruct"
+                   pattern="^[\w.\-]+/[\w.\-]+$" />
+            <span class="field-hint">Format: <code>org/name</code> from huggingface.co</span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Agents to run <span class="req">*</span></span>
+            <div class="checkrow">
+              <label><input type="checkbox" name="agents" value="oneshot" checked /> One-shot</label>
+              <label><input type="checkbox" name="agents" value="geak" checked /> Geak</label>
+              <label><input type="checkbox" name="agents" value="alphaevolve" checked /> AlphaEvolve</label>
+              <label><input type="checkbox" name="agents" value="leader" /> Leader</label>
+            </div>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Email (optional)</span>
+            <input type="email" name="email" placeholder="you@university.edu" />
+            <span class="field-hint">We'll ping you when the run finishes. Not displayed publicly.</span>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Notes (optional)</span>
+            <textarea name="notes" rows="3" maxlength="1000"
+                      placeholder="Anything we should know — fine-tuning details, prompt template, etc."></textarea>
+          </label>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submit for evaluation</button>
+          <div id="submit-result" class="submit-result"></div>
+        </form>
+      </div>
+
+      <!-- ─────── Option B: PR results ─────── -->
+      <div class="submit-card">
+        <h2>Pre-computed results (PR)</h2>
+        <p class="section-desc">
+          Already ran TritonGym on your own machine? Open a pull request with
+          your <code>logs/</code> and we'll merge them into the leaderboard.
+          This is the only path for closed-API models since we don't accept
+          API keys.
+        </p>
+
+        <ol class="submit-steps">
+          <li>
+            Clone the repo and run the benchmark on your model:
+<pre><code>git clone https://github.com/yil384/TritonGym-public
+cd TritonGym-public
+pip install -r requirements.txt
+export OPENAI_API_KEY=...   # or whichever provider
+python -m benchmark.cli \
+    --model your-model-name \
+    --agent alphaevolve \
+    --benchmark-json benchmark/data_v2/benchmark.json \
+    --json --logs logs</code></pre>
+          </li>
+          <li>
+            Confirm the numbers locally:
+<pre><code>python web/scripts/aggregate_logs.py --include-logs
+python summarize_results.py --logs logs/your-model-name</code></pre>
+          </li>
+          <li>
+            Move your run into <code>submissions/&lt;your-model-name&gt;/</code>
+            and open a PR titled <code>[submission] your-model-name</code>.
+            Include in the PR description:
+            <ul>
+              <li>Model name + size + license</li>
+              <li>Hardware used (GPU, CUDA version)</li>
+              <li>Anything we should know about the setup</li>
+            </ul>
+          </li>
+          <li>
+            We review for sanity (no answer-leakage, OOD numbers reproducible)
+            and merge. Your numbers go up on the leaderboard with a
+            <code>[submitted]</code> tag.
+          </li>
+        </ol>
+
+        <p>
+          <a class="btn" href="https://github.com/yil384/TritonGym-public/blob/main/SUBMISSIONS.md" target="_blank" rel="noopener">Submission template</a>
+          &nbsp;
+          <a class="btn" href="https://github.com/yil384/TritonGym-public/compare" target="_blank" rel="noopener">Open a PR</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="container section">
+    <h2>Queue status</h2>
+    <p class="section-desc">
+      Submissions are run on a single shared GPU. Reasonable wait time at
+      launch is hours; if the queue grows we'll add more workers.
+    </p>
+    <div class="hero-stats" id="queue-stats">
+      <div class="stat"><span class="stat-num" id="qs-pending">—</span><span class="stat-label">pending</span></div>
+      <div class="stat"><span class="stat-num" id="qs-completed">—</span><span class="stat-label">completed</span></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-row">
+    <span>© 2026 TritonGym</span>
+    <span><a href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="submit.js"></script>
+</body>
+</html>

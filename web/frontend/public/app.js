@@ -65,17 +65,12 @@ function render() {
   if (!data) return;
 
   const tbody = $("#lb-body");
-  const filtered = data.rows.filter(r => {
-    const src = r.source || (r.tokens && (r.tokens.input || r.tokens.output) ? "logs" : "logs");
-    if (src === "paper" && !state.showPaper) return false;
-    if (src === "logs"  && !state.showLogs)  return false;
-    return true;
-  });
+  const filtered = data.rows.slice();
 
   filtered.sort(compareRows);
 
   if (!filtered.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty">No rows match your filters.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">No rows to show.</td></tr>`;
     return;
   }
 
@@ -84,19 +79,13 @@ function render() {
 
   tbody.innerHTML = filtered.map((r, i) => {
     const s = r.splits[state.split] || {};
-    const cov = s.attempted != null && s.total
-      ? `${s.attempted}/${s.total}`
-      : (s.total ? `${s.total}/${s.total}` : "—");
     const passWidth = ((s.pass || 0) / maxPass) * 100;
-    const src = r.source || "logs";
     return `<tr>
       <td class="col-rank">${i + 1}</td>
       <td class="col-model">${escapeHtml(r.model_display)}</td>
       <td class="col-agent">${escapeHtml(r.agent_display)}</td>
       <td class="col-pass"><div class="bar-cell"><span>${fmtPct(s.pass)}</span><div class="bar"><div class="bar-fill" style="width:${passWidth}%"></div></div></div></td>
       <td class="col-perf">${fmtPerf(s.perf)}</td>
-      <td class="col-cov">${cov}</td>
-      <td class="col-src"><span class="tag tag-${src}">${src}</span></td>
     </tr>`;
   }).join("");
 }
@@ -139,8 +128,6 @@ function bindControls() {
     });
   });
 
-  $("#filter-paper").addEventListener("change", e => { state.showPaper = e.target.checked; render(); });
-  $("#filter-logs").addEventListener("change",  e => { state.showLogs  = e.target.checked; render(); });
 }
 
 function setHeroStats(data) {
@@ -157,6 +144,6 @@ function setHeroStats(data) {
     setHeroStats(state.data);
     render();
   } catch (e) {
-    $("#lb-body").innerHTML = `<tr><td colspan="7" class="empty">Could not load leaderboard data: ${escapeHtml(e.message)}</td></tr>`;
+    $("#lb-body").innerHTML = `<tr><td colspan="5" class="empty">Could not load leaderboard data: ${escapeHtml(e.message)}</td></tr>`;
   }
 })();

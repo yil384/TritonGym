@@ -20,6 +20,7 @@
       <a href="#workflows">Agents</a>
       <a href="#paper">Paper</a>
       <a href="#cite">Cite</a>
+      <a href="submit.html">Submit</a>
       <a class="nav-gh" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
@@ -30,6 +31,8 @@
     <div class="container">
       <h1>TritonGym</h1>
       <p class="tagline">A Benchmark for Agentic LLM Workflows in Triton GPU Code Generation</p>
+      <p class="authors">Yue Guan<sup>*</sup>, Yichen Lin<sup>*</sup>, Xu Zhao, Jianzhu Yao, Xinwei Qiang, Zhongkai Yu, Pramod Viswanath, Yufei Ding, Adnan Aziz</p>
+      <p class="authors-note"><sup>*</sup> Equal contribution</p>
       <p class="abstract">
         TritonGym is a benchmark and orchestration framework for evaluating how well large language
         models can write performant Triton GPU kernels — not just one-shot, but inside multi-step
@@ -67,10 +70,6 @@
         <button class="tab" data-split="ood">OOD</button>
         <button class="tab" data-split="dsl">DSL</button>
       </div>
-      <div class="filters">
-        <label><input type="checkbox" id="filter-paper" checked /> Paper-reported</label>
-        <label><input type="checkbox" id="filter-logs" checked /> From logs</label>
-      </div>
     </div>
 
     <div class="table-wrap">
@@ -82,18 +81,15 @@
             <th class="col-agent sortable" data-sort="agent">Agent</th>
             <th class="col-pass sortable sort-active sort-desc" data-sort="pass">Pass@1 ▼</th>
             <th class="col-perf sortable" data-sort="perf">Perf@1</th>
-            <th class="col-cov">Coverage</th>
-            <th class="col-src">Source</th>
           </tr>
         </thead>
-        <tbody id="lb-body"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+        <tbody id="lb-body"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
       </table>
     </div>
     <p class="footnote">
       Pass@1 over the full benchmark (164 operators) means correct outputs across all splits.
       Perf@1 &gt; 1 means the generated kernel is faster than the hand-tuned Triton oracle.
-      Rows marked “paper” come from the published evaluation; rows marked “logs” are computed
-      directly from this repo's <code>logs/</code> using <code>web/scripts/aggregate_logs.py</code>.
+      Numbers come from the published TritonGym evaluation.
     </p>
   </section>
 
@@ -158,10 +154,12 @@
       &nbsp;
       <a class="btn" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a>
     </p>
-    <pre class="cite" id="cite"><code>@article{tritongym2026,
-  title  = {TritonGym: A Benchmark for Agentic LLM Workflows in Triton GPU Code Generation},
-  author = {TritonGym Authors},
-  year   = {2026}
+    <pre class="cite" id="cite"><code>@inproceedings{tritongym2026,
+  title     = {TritonGym: A Benchmark for Agentic LLM Workflows in Triton GPU Code Generation},
+  author    = {Guan, Yue and Lin, Yichen and Zhao, Xu and Yao, Jianzhu and Qiang, Xinwei and Yu, Zhongkai and Viswanath, Pramod and Ding, Yufei and Aziz, Adnan},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2026},
+  note      = {Under review}
 }</code></pre>
   </section>
 </main>

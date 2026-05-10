@@ -162,6 +162,10 @@ def main():
     p.add_argument("--out", default="web/frontend/public/data/leaderboard.json")
     p.add_argument("--paper-results", default="web/scripts/paper_results.json",
                    help="Optional paper-reported numbers to merge in (preferred when present)")
+    p.add_argument("--paper-only", action="store_true", default=True,
+                   help="Emit only paper-reported rows (default). Use --include-logs to also include rows aggregated from logs/.")
+    p.add_argument("--include-logs", dest="paper_only", action="store_false",
+                   help="Also include rows aggregated from the local logs/ directory.")
     args = p.parse_args()
 
     rows, op_sets = aggregate(args.logs, args.base_dir)
@@ -192,6 +196,8 @@ def main():
         by_key[key] = merged
 
     merged_rows = list(by_key.values())
+    if args.paper_only:
+        merged_rows = [r for r in merged_rows if r.get("source") == "paper"]
 
     out = {
         "splits": {
