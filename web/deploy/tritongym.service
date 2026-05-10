@@ -1,0 +1,14 @@
+[Unit]
+Description=TritonGym leaderboard web service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/tritongym/backend
+ExecStart=/opt/tritongym/venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 7843
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

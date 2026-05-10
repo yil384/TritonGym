@@ -1,0 +1,1111 @@
+{
+  "splits": {
+    "standard": {
+      "size": 139
+    },
+    "ood": {
+      "size": 13
+    },
+    "dsl": {
+      "size": 12
+    }
+  },
+  "splits_order": [
+    "standard",
+    "ood",
+    "dsl",
+    "full"
+  ],
+  "rows": [
+    {
+      "model": "Qwen3-Coder-480B-A35B-Instruct-FP8",
+      "model_display": "Qwen-3",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.638,
+          "perf": 0.501,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.308,
+          "perf": 0.479,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.333,
+          "perf": 0.094,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.426,
+          "perf": 0.358,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Qwen3-Coder-480B-A35B-Instruct-FP8",
+      "model_display": "Qwen-3",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.564,
+          "perf": 0.597,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.317,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.095,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.348,
+          "perf": 0.336,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 3200000,
+        "output": 8800000
+      },
+      "source": "paper",
+      "cost_usd": 24.08
+    },
+    {
+      "model": "Qwen3-Coder-480B-A35B-Instruct-FP8",
+      "model_display": "Qwen-3",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.5,
+          "perf": 0.466,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.305,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.077,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.327,
+          "perf": 0.282,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "model_display": "Claude Haiku 4.5",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.37410071942446044,
+          "perf": 0.49579514361458743,
+          "attempted": 131,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.3170731707317073,
+          "perf": 0.42021661562455886,
+          "attempted": 131,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "model_display": "Claude Haiku 4.5",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.30935251798561153,
+          "perf": 0.41006807728682876,
+          "attempted": 129,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.2621951219512195,
+          "perf": 0.34755769965164146,
+          "attempted": 129,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-haiku-4-5-20251001",
+      "model_display": "Claude Haiku 4.5",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.302158273381295,
+          "perf": 0.5193159194550394,
+          "attempted": 133,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.25609756097560976,
+          "perf": 0.4401519073429907,
+          "attempted": 133,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-sonnet-4-20250514",
+      "model_display": "Claude Sonnet 4",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.381294964028777,
+          "perf": 4.962067392757105,
+          "attempted": 130,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.15384615384615385,
+          "perf": 0.1256032432656542,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.3353658536585366,
+          "perf": 4.215611035095678,
+          "attempted": 137,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-sonnet-4-20250514",
+      "model_display": "Claude Sonnet 4",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.41007194244604317,
+          "perf": 0.6380318808674925,
+          "attempted": 127,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.3475609756097561,
+          "perf": 0.5407709234181797,
+          "attempted": 134,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-sonnet-4-20250514",
+      "model_display": "Claude Sonnet 4",
+      "agent": "leader",
+      "agent_display": "Leader",
+      "splits": {
+        "standard": {
+          "pass": 0.35251798561151076,
+          "perf": 0.6248006451134522,
+          "attempted": 117,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.29878048780487804,
+          "perf": 0.5295566443339627,
+          "attempted": 117,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "claude-sonnet-4-20250514",
+      "model_display": "Claude Sonnet 4",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.3669064748201439,
+          "perf": 0.6107662876409644,
+          "attempted": 126,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.31097560975609756,
+          "perf": 0.5176616706225247,
+          "attempted": 133,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "deepseek-chat",
+      "model_display": "DeepSeek-V3",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.433,
+          "perf": 0.373,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.348,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.333,
+          "perf": 0.095,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.419,
+          "perf": 0.351,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "deepseek-chat",
+      "model_display": "DeepSeek-V3",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.409,
+          "perf": 0.363,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.308,
+          "perf": 0.548,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.13,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.381,
+          "perf": 0.362,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "deepseek-chat",
+      "model_display": "DeepSeek-V3",
+      "agent": "leader",
+      "agent_display": "Leader",
+      "splits": {
+        "standard": {
+          "pass": 0.15827338129496402,
+          "perf": 0.20343823727069268,
+          "attempted": 77,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.13414634146341464,
+          "perf": 0.17242631085747734,
+          "attempted": 77,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "deepseek-chat",
+      "model_display": "DeepSeek-V3",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.394,
+          "perf": 0.35,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.269,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.167,
+          "perf": 0.081,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.361,
+          "perf": 0.327,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "gemini-1.5-pro",
+      "model_display": "Gemini 1.5 Pro",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.09352517985611511,
+          "perf": 0.0563053418672412,
+          "attempted": 133,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.07692307692307693,
+          "perf": 0.008180964887639145,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.08536585365853659,
+          "perf": 0.04837070160418192,
+          "attempted": 140,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gemini-2.5-pro",
+      "model_display": "Gemini 2.5 Pro",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.30935251798561153,
+          "perf": 0.45083685238066457,
+          "attempted": 77,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.15384615384615385,
+          "perf": 0.16929199814881443,
+          "attempted": 4,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.27439024390243905,
+          "perf": 0.3955312101027254,
+          "attempted": 81,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gemini-2.5-pro",
+      "model_display": "Gemini 2.5 Pro",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.2446043165467626,
+          "perf": 0.4822183223980833,
+          "attempted": 94,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.2073170731707317,
+          "perf": 0.4087094317886194,
+          "attempted": 101,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gpt-4o",
+      "model_display": "GPT-4o",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.17266187050359713,
+          "perf": 0.31475937150201616,
+          "attempted": 131,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.14634146341463414,
+          "perf": 0.2667777599925625,
+          "attempted": 138,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gpt-4o",
+      "model_display": "GPT-4o",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.12949640287769784,
+          "perf": 0.1625960025544283,
+          "attempted": 133,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.07692307692307693,
+          "perf": 0.015136240374850507,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.11585365853658537,
+          "perf": 0.13900985048743042,
+          "attempted": 140,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gpt-4o",
+      "model_display": "GPT-4o",
+      "agent": "leader",
+      "agent_display": "Leader",
+      "splits": {
+        "standard": {
+          "pass": 0.1223021582733813,
+          "perf": 0.14874434806121037,
+          "attempted": 132,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.10365853658536585,
+          "perf": 0.1260699047591966,
+          "attempted": 132,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gpt-4o",
+      "model_display": "GPT-4o",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.1079136690647482,
+          "perf": 0.11098345262166018,
+          "attempted": 130,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 7,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.09146341463414634,
+          "perf": 0.09406524338055344,
+          "attempted": 137,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "gpt-5",
+      "model_display": "GPT-5",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.452,
+          "perf": 0.443,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.308,
+          "perf": 0.404,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.087,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.426,
+          "perf": 0.414,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "gpt-5",
+      "model_display": "GPT-5",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.296,
+          "perf": 0.285,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.132,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.109,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.287,
+          "perf": 0.26,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 3060000,
+        "output": 8290000
+      },
+      "source": "paper",
+      "cost_usd": 86.06
+    },
+    {
+      "model": "gpt-5",
+      "model_display": "GPT-5",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.261,
+          "perf": 0.26,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.154,
+          "perf": 0.104,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.083,
+          "perf": 0.026,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.239,
+          "perf": 0.231,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "model_display": "Llama-4",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "splits": {
+        "standard": {
+          "pass": 0.387,
+          "perf": 0.217,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.154,
+          "perf": 0.069,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.167,
+          "perf": 0.093,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.351,
+          "perf": 0.197,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "model_display": "Llama-4",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "splits": {
+        "standard": {
+          "pass": 0.333,
+          "perf": 0.227,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.077,
+          "perf": 0.066,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.167,
+          "perf": 0.056,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.297,
+          "perf": 0.202,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "model_display": "Llama-4",
+      "agent": "leader",
+      "agent_display": "Leader",
+      "splits": {
+        "standard": {
+          "pass": 0.20863309352517986,
+          "perf": 0.2446613491481138,
+          "attempted": 130,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.0,
+          "perf": 0.0,
+          "attempted": 0,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.17682926829268292,
+          "perf": 0.2073654117779745,
+          "attempted": 130,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "logs"
+    },
+    {
+      "model": "Llama-4-Maverick-17B-128E-Instruct-FP8",
+      "model_display": "Llama-4",
+      "agent": "oneshot",
+      "agent_display": "One-shot",
+      "splits": {
+        "standard": {
+          "pass": 0.268,
+          "perf": 0.205,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.077,
+          "perf": 0.063,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.167,
+          "perf": 0.053,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.246,
+          "perf": 0.182,
+          "total": 164
+        }
+      },
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Claude-4.5",
+      "model_display": "Claude-4.5",
+      "agent": "one-shot",
+      "agent_display": "One-shot",
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "splits": {
+        "standard": {
+          "pass": 0.551,
+          "perf": 0.61,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.223,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.167,
+          "perf": 0.089,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.316,
+          "perf": 0.307,
+          "total": 164
+        }
+      },
+      "source": "paper"
+    },
+    {
+      "model": "Claude-4.5",
+      "model_display": "Claude-4.5",
+      "agent": "geak",
+      "agent_display": "Geak",
+      "tokens": {
+        "input": 3530000,
+        "output": 8400000
+      },
+      "splits": {
+        "standard": {
+          "pass": 0.535,
+          "perf": 0.577,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.231,
+          "perf": 0.269,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.25,
+          "perf": 0.119,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.339,
+          "perf": 0.321,
+          "total": 164
+        }
+      },
+      "source": "paper",
+      "cost_usd": 135.13
+    },
+    {
+      "model": "Claude-4.5",
+      "model_display": "Claude-4.5",
+      "agent": "alphaevolve",
+      "agent_display": "AlphaEvolve",
+      "tokens": {
+        "input": 0,
+        "output": 0
+      },
+      "splits": {
+        "standard": {
+          "pass": 0.695,
+          "perf": 0.754,
+          "total": 139
+        },
+        "ood": {
+          "pass": 0.615,
+          "perf": 0.872,
+          "total": 13
+        },
+        "dsl": {
+          "pass": 0.333,
+          "perf": 0.124,
+          "total": 12
+        },
+        "full": {
+          "pass": 0.548,
+          "perf": 0.583,
+          "total": 164
+        }
+      },
+      "source": "paper"
+    }
+  ]
+}

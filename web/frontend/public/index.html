@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TritonGym — Leaderboard</title>
+  <meta name="description" content="A benchmark for evaluating agentic LLM workflows in Triton GPU code generation." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container header-row">
+    <a class="brand" href="#top">
+      <span class="brand-logo">⚙️</span>
+      <span class="brand-name">TritonGym</span>
+    </a>
+    <nav class="nav">
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#dataset">Dataset</a>
+      <a href="#workflows">Agents</a>
+      <a href="#paper">Paper</a>
+      <a href="#cite">Cite</a>
+      <a class="nav-gh" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container">
+      <h1>TritonGym</h1>
+      <p class="tagline">A Benchmark for Agentic LLM Workflows in Triton GPU Code Generation</p>
+      <p class="abstract">
+        TritonGym is a benchmark and orchestration framework for evaluating how well large language
+        models can write performant Triton GPU kernels — not just one-shot, but inside multi-step
+        agent loops with compilation, verification, and iterative refinement. The benchmark spans a
+        maintained operator set, out-of-distribution tasks, and DSL extensions (Gluon &amp; TLX),
+        and standardizes tool access so workflow design and intrinsic model capability can be
+        cleanly separated.
+      </p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="stat-ops">—</span><span class="stat-label">operators</span></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">splits</span></div>
+        <div class="stat"><span class="stat-num">4</span><span class="stat-label">agents</span></div>
+        <div class="stat"><span class="stat-num" id="stat-models">—</span><span class="stat-label">models evaluated</span></div>
+      </div>
+      <div class="cta">
+        <a class="btn btn-primary" href="paper.pdf" target="_blank" rel="noopener">Read Paper (PDF)</a>
+        <a class="btn" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">Code &amp; Dataset</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section">
+    <h2 id="leaderboard">Official Leaderboard</h2>
+    <p class="section-desc">
+      Models are ranked by <strong>Pass@1</strong> (correctness, max abs error ≤ 0.01 vs the PyTorch
+      reference) and <strong>Perf@1</strong> (oracle Triton latency / generated kernel latency,
+      averaged over all operators with 0 for failures). Click a column header to sort. Toggle the
+      split tabs to compare model behavior across the standard, OOD, DSL, and full benchmarks.
+    </p>
+
+    <div class="lb-controls">
+      <div class="tabs" id="split-tabs">
+        <button class="tab active" data-split="full">Full Benchmark</button>
+        <button class="tab" data-split="standard">Standard</button>
+        <button class="tab" data-split="ood">OOD</button>
+        <button class="tab" data-split="dsl">DSL</button>
+      </div>
+      <div class="filters">
+        <label><input type="checkbox" id="filter-paper" checked /> Paper-reported</label>
+        <label><input type="checkbox" id="filter-logs" checked /> From logs</label>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="leaderboard">
+        <thead>
+          <tr>
+            <th class="col-rank">#</th>
+            <th class="col-model sortable" data-sort="model">Model</th>
+            <th class="col-agent sortable" data-sort="agent">Agent</th>
+            <th class="col-pass sortable sort-active sort-desc" data-sort="pass">Pass@1 ▼</th>
+            <th class="col-perf sortable" data-sort="perf">Perf@1</th>
+            <th class="col-cov">Coverage</th>
+            <th class="col-src">Source</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="footnote">
+      Pass@1 over the full benchmark (164 operators) means correct outputs across all splits.
+      Perf@1 &gt; 1 means the generated kernel is faster than the hand-tuned Triton oracle.
+      Rows marked “paper” come from the published evaluation; rows marked “logs” are computed
+      directly from this repo's <code>logs/</code> using <code>web/scripts/aggregate_logs.py</code>.
+    </p>
+  </section>
+
+  <section class="container section">
+    <h2 id="dataset">Dataset</h2>
+    <div class="grid-2">
+      <div>
+        <p>
+          The benchmark spans <strong>164 operators</strong> across three splits:
+        </p>
+        <ul>
+          <li><strong>Standard</strong> — 139 common GPU kernels (matmul, attention, normalization,
+            activations, quantization, …) with reference PyTorch implementations and oracle Triton
+            kernels.</li>
+          <li><strong>OOD</strong> — 13 novel operators less likely to be in pre-training corpora.</li>
+          <li><strong>DSL</strong> — 12 operators specified in domain-specific languages (Gluon, TLX),
+            evaluating the generalization of agents to new programming abstractions.</li>
+        </ul>
+        <p>
+          Each operator is evaluated on multiple input shapes; correctness uses a max-absolute-error
+          threshold of 0.01 against the PyTorch reference, and performance is the latency ratio
+          against the oracle Triton kernel.
+        </p>
+      </div>
+      <figure>
+        <img src="static/dataset.png" alt="Dataset composition" />
+        <figcaption>Operator coverage across the standard / OOD / DSL splits.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="container section">
+    <h2 id="workflows">Agentic Workflows</h2>
+    <p class="section-desc">
+      TritonGym standardizes tool access (compilation, verification, profiling) so workflow design
+      can be evaluated independently of the underlying LLM. Four workflows ship out of the box:
+    </p>
+    <div class="agents">
+      <div class="agent-card"><h3>One-shot</h3><p>Single-pass generation from the operator spec — the lower bound on what an LLM can do without feedback.</p></div>
+      <div class="agent-card"><h3>Geak</h3><p>Multi-agent pipeline with generator, compiler, verifier, optimizer, and reflector roles.</p></div>
+      <div class="agent-card"><h3>AlphaEvolve</h3><p>Iterative refinement using evaluator feedback (up to 5 attempts). Currently the best workflow on the benchmark.</p></div>
+      <div class="agent-card"><h3>Leader</h3><p>Diff-based iterative agent that proposes incremental code edits across rounds.</p></div>
+    </div>
+    <figure class="full-fig">
+      <img src="static/workflows.png" alt="Agent workflows" />
+      <figcaption>Workflow comparison across the four agents.</figcaption>
+    </figure>
+  </section>
+
+  <section class="container section">
+    <h2 id="errors">Where Models Fail</h2>
+    <div class="grid-2">
+      <figure><img src="static/error_breakdown.png" alt="Error breakdown" /><figcaption>Failure mode breakdown by category.</figcaption></figure>
+      <figure><img src="static/trial_trend.png" alt="Trial trend" /><figcaption>Pass-rate trend across iterative attempts.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="container section" id="paper">
+    <h2>Paper</h2>
+    <p>
+      <a class="btn btn-primary" href="paper.pdf" target="_blank" rel="noopener">Download PDF</a>
+      &nbsp;
+      <a class="btn" href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a>
+    </p>
+    <pre class="cite" id="cite"><code>@article{tritongym2026,
+  title  = {TritonGym: A Benchmark for Agentic LLM Workflows in Triton GPU Code Generation},
+  author = {TritonGym Authors},
+  year   = {2026}
+}</code></pre>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-row">
+    <span>© 2026 TritonGym</span>
+    <span><a href="https://github.com/yil384/TritonGym-public" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+[
+  {
+    "model_display": "Llama-4",
+    "agent_display": "One-shot",
+    "splits": {
+      "standard": {"pass": 0.268, "perf": 0.205, "total": 139},
+      "ood":      {"pass": 0.077, "perf": 0.063, "total": 13},
+      "dsl":      {"pass": 0.167, "perf": 0.053, "total": 12},
+      "full":     {"pass": 0.246, "perf": 0.182, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "GPT-5",
+    "agent_display": "One-shot",
+    "splits": {
+      "standard": {"pass": 0.261, "perf": 0.260, "total": 139},
+      "ood":      {"pass": 0.154, "perf": 0.104, "total": 13},
+      "dsl":      {"pass": 0.083, "perf": 0.026, "total": 12},
+      "full":     {"pass": 0.239, "perf": 0.231, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "Qwen-3",
+    "agent_display": "One-shot",
+    "splits": {
+      "standard": {"pass": 0.500, "perf": 0.466, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.305, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.077, "total": 12},
+      "full":     {"pass": 0.327, "perf": 0.282, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "DeepSeek-V3",
+    "agent_display": "One-shot",
+    "splits": {
+      "standard": {"pass": 0.394, "perf": 0.350, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.269, "total": 13},
+      "dsl":      {"pass": 0.167, "perf": 0.081, "total": 12},
+      "full":     {"pass": 0.361, "perf": 0.327, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "Claude-4.5",
+    "agent_display": "One-shot",
+    "splits": {
+      "standard": {"pass": 0.551, "perf": 0.610, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.223, "total": 13},
+      "dsl":      {"pass": 0.167, "perf": 0.089, "total": 12},
+      "full":     {"pass": 0.316, "perf": 0.307, "total": 164}
+    },
+    "source": "paper"
+  },
+
+  {
+    "model_display": "Llama-4",
+    "agent_display": "Geak",
+    "splits": {
+      "standard": {"pass": 0.333, "perf": 0.227, "total": 139},
+      "ood":      {"pass": 0.077, "perf": 0.066, "total": 13},
+      "dsl":      {"pass": 0.167, "perf": 0.056, "total": 12},
+      "full":     {"pass": 0.297, "perf": 0.202, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "GPT-5",
+    "agent_display": "Geak",
+    "splits": {
+      "standard": {"pass": 0.296, "perf": 0.285, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.132, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.109, "total": 12},
+      "full":     {"pass": 0.287, "perf": 0.260, "total": 164}
+    },
+    "source": "paper",
+    "tokens": {"input": 3060000, "output": 8290000},
+    "cost_usd": 86.06
+  },
+  {
+    "model_display": "Qwen-3",
+    "agent_display": "Geak",
+    "splits": {
+      "standard": {"pass": 0.564, "perf": 0.597, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.317, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.095, "total": 12},
+      "full":     {"pass": 0.348, "perf": 0.336, "total": 164}
+    },
+    "source": "paper",
+    "tokens": {"input": 3200000, "output": 8800000},
+    "cost_usd": 24.08
+  },
+  {
+    "model_display": "DeepSeek-V3",
+    "agent_display": "Geak",
+    "splits": {
+      "standard": {"pass": 0.409, "perf": 0.363, "total": 139},
+      "ood":      {"pass": 0.308, "perf": 0.548, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.130, "total": 12},
+      "full":     {"pass": 0.381, "perf": 0.362, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "Claude-4.5",
+    "agent_display": "Geak",
+    "splits": {
+      "standard": {"pass": 0.535, "perf": 0.577, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.269, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.119, "total": 12},
+      "full":     {"pass": 0.339, "perf": 0.321, "total": 164}
+    },
+    "source": "paper",
+    "tokens": {"input": 3530000, "output": 8400000},
+    "cost_usd": 135.13
+  },
+
+  {
+    "model_display": "Llama-4",
+    "agent_display": "AlphaEvolve",
+    "splits": {
+      "standard": {"pass": 0.387, "perf": 0.217, "total": 139},
+      "ood":      {"pass": 0.154, "perf": 0.069, "total": 13},
+      "dsl":      {"pass": 0.167, "perf": 0.093, "total": 12},
+      "full":     {"pass": 0.351, "perf": 0.197, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "GPT-5",
+    "agent_display": "AlphaEvolve",
+    "splits": {
+      "standard": {"pass": 0.452, "perf": 0.443, "total": 139},
+      "ood":      {"pass": 0.308, "perf": 0.404, "total": 13},
+      "dsl":      {"pass": 0.250, "perf": 0.087, "total": 12},
+      "full":     {"pass": 0.426, "perf": 0.414, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "Qwen-3",
+    "agent_display": "AlphaEvolve",
+    "splits": {
+      "standard": {"pass": 0.638, "perf": 0.501, "total": 139},
+      "ood":      {"pass": 0.308, "perf": 0.479, "total": 13},
+      "dsl":      {"pass": 0.333, "perf": 0.094, "total": 12},
+      "full":     {"pass": 0.426, "perf": 0.358, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "DeepSeek-V3",
+    "agent_display": "AlphaEvolve",
+    "splits": {
+      "standard": {"pass": 0.433, "perf": 0.373, "total": 139},
+      "ood":      {"pass": 0.231, "perf": 0.348, "total": 13},
+      "dsl":      {"pass": 0.333, "perf": 0.095, "total": 12},
+      "full":     {"pass": 0.419, "perf": 0.351, "total": 164}
+    },
+    "source": "paper"
+  },
+  {
+    "model_display": "Claude-4.5",
+    "agent_display": "AlphaEvolve",
+    "splits": {
+      "standard": {"pass": 0.695, "perf": 0.754, "total": 139},
+      "ood":      {"pass": 0.615, "perf": 0.872, "total": 13},
+      "dsl":      {"pass": 0.333, "perf": 0.124, "total": 12},
+      "full":     {"pass": 0.548, "perf": 0.583, "total": 164}
+    },
+    "source": "paper"
+  }
+]

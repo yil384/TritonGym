@@ -1,0 +1,45 @@
+# Generated outputs
+generated_code*/
+logs*/
+attempts/
+
+# Paper source kept locally only
+3520_TritonGym_A_Benchmark_for.pdf
+triton_benchmark_25.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp/runtime
+*.log
+nohup.out
+*.pdf
+!web/frontend/public/static/*.pdf
+
+# Old data (superseded by data_v2)
+benchmark/data/
+benchmark/data_ood/
+benchmark/data_dsl/
+benchmark/data_dsl_old/
+benchmark/_agents_copy/

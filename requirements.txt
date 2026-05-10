@@ -1,0 +1,6 @@
+anthropic
+torch
+openai
+google-generativeai
+together
+triton==3.1
