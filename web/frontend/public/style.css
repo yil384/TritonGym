@@ -107,6 +107,7 @@ figcaption { color: var(--text-muted); font-size: 13px; margin-top: 8px; text-al
   margin: 8px 0 16px; gap: 16px; flex-wrap: wrap;
 }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.view-tabs .tab { font-size: 13px; padding: 6px 12px; }
 .tab {
   background: var(--bg-card); border: 1px solid var(--border);
   color: var(--text-muted); padding: 7px 14px; border-radius: 6px;
@@ -139,6 +140,13 @@ figcaption { color: var(--text-muted); font-size: 13px; margin-top: 8px; text-al
 .sortable:hover { color: var(--text); }
 .sort-active { color: var(--accent) !important; }
 
+.group-header td {
+  background: var(--bg-elev);
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--accent); font-weight: 700;
+  padding-top: 14px; padding-bottom: 8px;
+}
+.group-count { color: var(--text-muted); font-weight: 400; margin-left: 8px; text-transform: none; letter-spacing: 0; }
 .bar-cell { display: flex; align-items: center; gap: 8px; }
 .bar { flex: 1 1 80px; max-width: 120px; height: 6px; background: var(--bg-elev); border-radius: 3px; overflow: hidden; }
 .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }

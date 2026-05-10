@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate repo structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate benchmark JSON files parse
+        run: |
+          python -c "
+          import json, sys
+          for p in [
+              'benchmark/data_v2/benchmark.json',
+              'benchmark/data_ood_v2/benchmark.json',
+              'benchmark/data_dsl_v2/benchmark.json',
+          ]:
+              d = json.load(open(p))
+              assert isinstance(d, dict), f'{p} is not an object'
+              for op, spec in d.items():
+                  for k in ('torch_operator', 'triton_operator', 'input_shapes'):
+                      assert k in spec, f'{op} missing {k} in {p}'
+              print(f'{p}: {len(d)} operators OK')
+          "
+
+      - name: Validate paper_results.json parses
+        run: |
+          python -c "
+          import json
+          rows = json.load(open('web/scripts/paper_results.json'))
+          for r in rows:
+              for k in ('model_display', 'agent_display', 'splits'):
+                  assert k in r, f'row missing {k}: {r}'
+              for s in r['splits'].values():
+                  for k in ('pass', 'perf', 'total'):
+                      assert k in s, f'split missing {k}: {s}'
+          print(f'paper_results.json: {len(rows)} rows OK')
+          "
+
+      - name: Validate aggregate_logs.py runs
+        run: |
+          python web/scripts/aggregate_logs.py \
+            --base-dir . \
+            --logs /tmp/empty-logs \
+            --paper-results web/scripts/paper_results.json \
+            --out /tmp/lb.json
+          python -c "
+          import json
+          d = json.load(open('/tmp/lb.json'))
+          assert 'rows' in d and len(d['rows']) > 0, 'empty leaderboard'
+          print(f'leaderboard: {len(d[\"rows\"])} rows OK')
+          "
+
+  validate-submissions:
+    name: Validate submission JSONs (if any)
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.title, '[submission]')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sanity-check submission shape
+        run: |
+          set -e
+          shopt -s nullglob globstar
+          test -d submissions || { echo "no submissions/ dir, nothing to check"; exit 0; }
+          for f in submissions/**/*.json; do
+            python -c "
+          import json, sys
+          d = json.load(open('$f'))
+          for k in ('operator', 'compile_success', 'metrics'):
+              assert k in d, f'$f missing {k}'
+          " || exit 1
+          done
+          echo "all submission JSONs have the expected shape"

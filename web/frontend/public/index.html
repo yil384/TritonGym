@@ -4,7 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TritonGym — Leaderboard</title>
-  <meta name="description" content="A benchmark for evaluating agentic LLM workflows in Triton GPU code generation." />
+  <meta name="description" content="A benchmark for evaluating agentic LLM workflows in Triton GPU code generation. 164 operators across Standard, OOD, and DSL splits." />
+  <meta name="keywords" content="TritonGym, Triton, GPU kernels, LLM benchmark, agentic, code generation, ICLR 2026" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- Open Graph / link previews -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="TritonGym — Leaderboard" />
+  <meta property="og:description" content="A benchmark for evaluating agentic LLM workflows in Triton GPU code generation. 164 operators × 4 agents." />
+  <meta property="og:url" content="https://tritongym.picasso-lab.com/" />
+  <meta property="og:image" content="https://tritongym.picasso-lab.com/static/overview.png" />
+  <meta property="og:image:alt" content="TritonGym overview diagram" />
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TritonGym — Leaderboard" />
+  <meta name="twitter:description" content="A benchmark for evaluating agentic LLM workflows in Triton GPU code generation." />
+  <meta name="twitter:image" content="https://tritongym.picasso-lab.com/static/overview.png" />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -16,6 +33,7 @@
     </a>
     <nav class="nav">
       <a href="#leaderboard">Leaderboard</a>
+      <a href="#cost">Cost</a>
       <a href="#dataset">Dataset</a>
       <a href="#workflows">Agents</a>
       <a href="#paper">Paper</a>
@@ -70,6 +88,10 @@
         <button class="tab" data-split="ood">OOD</button>
         <button class="tab" data-split="dsl">DSL</button>
       </div>
+      <div class="tabs view-tabs" id="view-tabs">
+        <button class="tab active" data-view="flat">Flat</button>
+        <button class="tab" data-view="agent">By Agent</button>
+      </div>
     </div>
 
     <div class="table-wrap">
@@ -90,6 +112,63 @@
       Pass@1 over the full benchmark (164 operators) means correct outputs across all splits.
       Perf@1 &gt; 1 means the generated kernel is faster than the hand-tuned Triton oracle.
       Numbers come from the published TritonGym evaluation.
+    </p>
+  </section>
+
+  <section class="container section" id="cost">
+    <h2>Cost-Effectiveness</h2>
+    <p class="section-desc">
+      Total compute cost across the full TritonGym evaluation (all agents,
+      all 164 operators). <strong>Cost / Pass</strong> is the dollars spent
+      per correctly-solved operator — lower is better. Numbers from the
+      paper.
+    </p>
+    <div class="table-wrap">
+      <table class="leaderboard">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Input</th>
+            <th>Output</th>
+            <th>Cost ($)</th>
+            <th>Pass@1</th>
+            <th>Perf@1</th>
+            <th>$/Pass</th>
+            <th>$/Perf</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Qwen-3</td><td>3.20M</td><td>8.80M</td>
+            <td class="col-pass">$24.08</td>
+            <td class="col-pass">40.1%</td>
+            <td class="col-perf">0.404</td>
+            <td class="col-perf">$60.1</td>
+            <td class="col-perf">$59.6</td>
+          </tr>
+          <tr>
+            <td>GPT-5</td><td>3.06M</td><td>8.29M</td>
+            <td class="col-pass">$86.06</td>
+            <td class="col-pass">25.4%</td>
+            <td class="col-perf">0.206</td>
+            <td class="col-perf">$339.0</td>
+            <td class="col-perf">$417.8</td>
+          </tr>
+          <tr>
+            <td>Claude-4.5</td><td>3.53M</td><td>8.40M</td>
+            <td class="col-pass">$135.13</td>
+            <td class="col-pass">36.7%</td>
+            <td class="col-perf">0.326</td>
+            <td class="col-perf">$368.0</td>
+            <td class="col-perf">$414.5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote">
+      Pass@1 here is a model-level aggregate across the three agents
+      (One-shot, Geak, AlphaEvolve), so it does not match any single row in
+      the main leaderboard above.
     </p>
   </section>
 

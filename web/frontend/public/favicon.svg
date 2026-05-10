@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="20" fill="#0e1116"/>
+  <g transform="translate(50,50)">
+    <g fill="url(#g)">
+      <!-- 6-tooth gear -->
+      <path d="
+        M -7 -32 L 7 -32 L 9 -22
+        L 22 -19 L 28 -28 L 38 -18 L 30 -10
+        L 32 4 L 42 5 L 42 19 L 32 21
+        L 28 33 L 36 41 L 26 51 L 18 43
+        L 5 47 L 4 57 L -10 57 L -11 47
+        L -23 41 L -32 47 L -42 37 L -34 29
+        L -38 16 L -48 14 L -47 0 L -37 -2
+        L -32 -16 L -41 -23 L -33 -33 L -23 -27
+        L -10 -23 Z
+      " transform="scale(0.62)"/>
+    </g>
+    <circle r="9" fill="#0e1116"/>
+  </g>
+</svg>

@@ -10,6 +10,9 @@ import json
 import os
 import re
 import sqlite3
+import sys
+import urllib.error
+import urllib.request
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -27,6 +30,57 @@ HF_MODEL_RE = re.compile(r"^[\w.-]+/[\w.-]+$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 app = FastAPI(title="TritonGym Leaderboard")
+
+
+def notify_maintainer(sub: dict) -> None:
+    """Best-effort email notification for a new submission, via Resend.
+
+    No-op if RESEND_API_KEY / MAINTAINER_EMAIL aren't set, so a fresh
+    open-source deploy without credentials still works. Errors are logged
+    but never propagated — we never want a flaky email service to fail
+    submissions.
+    """
+    api_key = os.environ.get("RESEND_API_KEY")
+    to      = os.environ.get("MAINTAINER_EMAIL")
+    sender  = os.environ.get("EMAIL_FROM", "TritonGym <admin@picasso-lab.com>")
+    if not (api_key and to):
+        return
+
+    body = (
+        f"New TritonGym submission queued.\n\n"
+        f"  ID:     {sub['id']}\n"
+        f"  Model:  {sub['hf_model']}\n"
+        f"  Agents: {sub['agents']}\n"
+        f"  Email:  {sub.get('email') or '(none)'}\n"
+        f"  Notes:  {sub.get('notes') or '(none)'}\n"
+        f"  IP:     {sub.get('ip') or '(unknown)'}\n\n"
+        f"Triage:\n"
+        f"  python web/scripts/run_submission.py show {sub['id']}\n"
+    )
+    payload = json.dumps({
+        "from":    sender,
+        "to":      [to],
+        "subject": f"[TritonGym] submission #{sub['id']}: {sub['hf_model']}",
+        "text":    body,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type":  "application/json",
+            "User-Agent":    "TritonGym/1.0",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            resp.read()
+    except urllib.error.HTTPError as e:
+        print(f"[notify_maintainer] Resend HTTP {e.code}: {(e.fp.read() if e.fp else b'')[:200]!r}", file=sys.stderr)
+    except Exception as e:
+        print(f"[notify_maintainer] Resend send failed: {e}", file=sys.stderr)
 
 
 @contextmanager
@@ -106,6 +160,11 @@ async def submit(request: Request):
             (hf, email or None, ",".join(agents), notes or None, ip),
         )
         sub_id = cur.lastrowid
+
+    notify_maintainer({
+        "id": sub_id, "hf_model": hf, "agents": ",".join(agents),
+        "email": email, "notes": notes, "ip": ip,
+    })
 
     return {
         "id": sub_id,

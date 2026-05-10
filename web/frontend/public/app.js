@@ -15,11 +15,12 @@ const SPLIT_LABELS = {
 const state = {
   data: null,
   split: "full",
+  view: "flat",          // "flat" | "agent"
   sortKey: "pass",
   sortDir: "desc",
-  showPaper: true,
-  showLogs: true,
 };
+
+const AGENT_ORDER = ["AlphaEvolve", "Geak", "One-shot", "Leader"];
 
 async function loadData() {
   // Prefer the API (when served behind FastAPI) but fall back to the static
@@ -65,29 +66,54 @@ function render() {
   if (!data) return;
 
   const tbody = $("#lb-body");
-  const filtered = data.rows.slice();
+  const rows = data.rows.slice();
 
-  filtered.sort(compareRows);
-
-  if (!filtered.length) {
+  if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="5" class="empty">No rows to show.</td></tr>`;
     return;
   }
 
-  // For visual scaling of the bar cell, use the max pass on the current split.
-  const maxPass = filtered.reduce((m, r) => Math.max(m, r.splits[state.split]?.pass || 0), 0) || 1;
+  // Visual bar scaling uses the global max pass on the current split,
+  // so bars stay comparable across the agent groups.
+  const maxPass = rows.reduce((m, r) => Math.max(m, r.splits[state.split]?.pass || 0), 0) || 1;
 
-  tbody.innerHTML = filtered.map((r, i) => {
-    const s = r.splits[state.split] || {};
-    const passWidth = ((s.pass || 0) / maxPass) * 100;
-    return `<tr>
-      <td class="col-rank">${i + 1}</td>
-      <td class="col-model">${escapeHtml(r.model_display)}</td>
-      <td class="col-agent">${escapeHtml(r.agent_display)}</td>
-      <td class="col-pass"><div class="bar-cell"><span>${fmtPct(s.pass)}</span><div class="bar"><div class="bar-fill" style="width:${passWidth}%"></div></div></div></td>
-      <td class="col-perf">${fmtPerf(s.perf)}</td>
-    </tr>`;
-  }).join("");
+  if (state.view === "agent") {
+    // Group by agent, ordered by AGENT_ORDER. Within each group, sort by Pass desc.
+    const groups = new Map();
+    for (const r of rows) {
+      const a = r.agent_display;
+      if (!groups.has(a)) groups.set(a, []);
+      groups.get(a).push(r);
+    }
+    const sortedAgents = [...groups.keys()].sort((a, b) => {
+      const ia = AGENT_ORDER.indexOf(a), ib = AGENT_ORDER.indexOf(b);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+
+    const html = sortedAgents.map(agent => {
+      const grp = groups.get(agent).slice().sort(compareRows);
+      const groupRows = grp.map((r, i) => renderRow(r, i + 1, maxPass, /*showAgent*/ false)).join("");
+      return `<tr class="group-header"><td colspan="5">${escapeHtml(agent)} <span class="group-count">${grp.length} model${grp.length === 1 ? "" : "s"}</span></td></tr>${groupRows}`;
+    }).join("");
+
+    tbody.innerHTML = html;
+  } else {
+    // Flat: respect current sort.
+    rows.sort(compareRows);
+    tbody.innerHTML = rows.map((r, i) => renderRow(r, i + 1, maxPass, true)).join("");
+  }
+}
+
+function renderRow(r, rank, maxPass, showAgent) {
+  const s = r.splits[state.split] || {};
+  const passWidth = ((s.pass || 0) / maxPass) * 100;
+  return `<tr>
+    <td class="col-rank">${rank}</td>
+    <td class="col-model">${escapeHtml(r.model_display)}</td>
+    <td class="col-agent">${showAgent ? escapeHtml(r.agent_display) : ""}</td>
+    <td class="col-pass"><div class="bar-cell"><span>${fmtPct(s.pass)}</span><div class="bar"><div class="bar-fill" style="width:${passWidth}%"></div></div></div></td>
+    <td class="col-perf">${fmtPerf(s.perf)}</td>
+  </tr>`;
 }
 
 function escapeHtml(s) {
@@ -97,11 +123,22 @@ function escapeHtml(s) {
 }
 
 function bindControls() {
-  $$(".tabs .tab").forEach(btn => {
+  // Split tabs (Full/Standard/OOD/DSL)
+  $$("#split-tabs .tab").forEach(btn => {
     btn.addEventListener("click", () => {
-      $$(".tabs .tab").forEach(b => b.classList.remove("active"));
+      $$("#split-tabs .tab").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       state.split = btn.dataset.split;
+      render();
+    });
+  });
+
+  // View tabs (Flat / By Agent)
+  $$("#view-tabs .tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $$("#view-tabs .tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.view = btn.dataset.view;
       render();
     });
   });

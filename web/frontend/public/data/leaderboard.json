@@ -78,11 +78,10 @@
         }
       },
       "tokens": {
-        "input": 3200000,
-        "output": 8800000
+        "input": 0,
+        "output": 0
       },
-      "source": "paper",
-      "cost_usd": 24.08
+      "source": "paper"
     },
     {
       "model": "Qwen3-Coder-480B-A35B-Instruct-FP8",
@@ -277,11 +276,10 @@
         }
       },
       "tokens": {
-        "input": 3060000,
-        "output": 8290000
+        "input": 0,
+        "output": 0
       },
-      "source": "paper",
-      "cost_usd": 86.06
+      "source": "paper"
     },
     {
       "model": "gpt-5",
@@ -454,8 +452,8 @@
       "agent": "geak",
       "agent_display": "Geak",
       "tokens": {
-        "input": 3530000,
-        "output": 8400000
+        "input": 0,
+        "output": 0
       },
       "splits": {
         "standard": {
@@ -479,8 +477,7 @@
           "total": 164
         }
       },
-      "source": "paper",
-      "cost_usd": 135.13
+      "source": "paper"
     },
     {
       "model": "Claude-4.5",

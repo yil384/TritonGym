@@ -75,9 +75,7 @@
       "dsl":      {"pass": 0.250, "perf": 0.109, "total": 12},
       "full":     {"pass": 0.287, "perf": 0.260, "total": 164}
     },
-    "source": "paper",
-    "tokens": {"input": 3060000, "output": 8290000},
-    "cost_usd": 86.06
+    "source": "paper"
   },
   {
     "model_display": "Qwen-3",
@@ -88,9 +86,7 @@
       "dsl":      {"pass": 0.250, "perf": 0.095, "total": 12},
       "full":     {"pass": 0.348, "perf": 0.336, "total": 164}
     },
-    "source": "paper",
-    "tokens": {"input": 3200000, "output": 8800000},
-    "cost_usd": 24.08
+    "source": "paper"
   },
   {
     "model_display": "DeepSeek-V3",
@@ -112,9 +108,7 @@
       "dsl":      {"pass": 0.250, "perf": 0.119, "total": 12},
       "full":     {"pass": 0.339, "perf": 0.321, "total": 164}
     },
-    "source": "paper",
-    "tokens": {"input": 3530000, "output": 8400000},
-    "cost_usd": 135.13
+    "source": "paper"
   },
 
   {
