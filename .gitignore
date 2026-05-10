@@ -47,3 +47,4 @@ benchmark/data_ood/
 benchmark/data_dsl/
 benchmark/data_dsl_old/
 benchmark/_agents_copy/
+tmp/
