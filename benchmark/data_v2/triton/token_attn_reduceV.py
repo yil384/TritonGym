@@ -68,8 +68,10 @@ def triton_token_attn_reduceV(prob, v):
     BLOCK = 128
     device = prob.device
     batch, seq_len = 2, prob.shape[1] // 2
-    # Safe Req_to_tokens
-    Req_to_tokens = torch.randint(0, batch * seq_len, (batch, seq_len), dtype=torch.int32, device=device)
+    # V layout: [num_kv_heads, num_tokens, head_dim]; token indices must address V's token dim.
+    # Use a fixed-seed generator so the torch reference builds the identical mapping.
+    gen = torch.Generator().manual_seed(0)
+    Req_to_tokens = torch.randint(0, v.shape[1], (batch, seq_len), dtype=torch.int32, generator=gen).to(device)
     B_req_idx = torch.arange(batch, dtype=torch.int32, device=device)
     B_Start_Loc = torch.zeros(batch, dtype=torch.int32, device=device)
     B_Seqlen = torch.full((batch,), seq_len, dtype=torch.int32, device=device)
@@ -79,7 +81,11 @@ def triton_token_attn_reduceV(prob, v):
     dim = v.shape[-1]
     out = torch.zeros((batch, head, dim), dtype=prob.dtype, device=prob.device)
 
-    kv_group_num = prob.shape[0] // v.shape[1]
+    # V is [num_kv_heads, num_tokens, head_dim]: kv heads live in dim 0, tokens in dim 1.
+    num_kv_heads = v.shape[0]
+    assert num_kv_heads > 0 and head % num_kv_heads == 0, \
+        f"num_heads ({head}) must be a positive multiple of num_kv_heads ({num_kv_heads})"
+    kv_group_num = head // num_kv_heads
 
     _fwd_kernel_token_att2[grid](
         prob,
@@ -93,9 +99,9 @@ def triton_token_attn_reduceV(prob, v):
         Req_to_tokens.stride(1),
         prob.stride(0),
         prob.stride(1),
-        v.stride(0),
-        v.stride(1),
-        v.stride(2),
+        v.stride(1),  # stride_vbs (token)
+        v.stride(0),  # stride_vh (kv head)
+        v.stride(2),  # stride_vd
         out.stride(0),
         out.stride(1),
         out.stride(2),

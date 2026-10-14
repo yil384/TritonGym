@@ -34,12 +34,16 @@ def _fwd_kernel_token_softmax(
 # Function to launch the Triton kernel
 @torch.no_grad()
 def triton_token_softmax_llama(Logics):
+    # Logics is [head_num, sum(seq_lens)]. Split its token axis into
+    # `batch_size` contiguous segments derived from the actual width
+    # (2 x 8 for a (2, 16) input), so every segment stays inside Logics.
     batch_size = 2
-    head_num = 2
-    max_input_len = 8
-    B_Start_Loc = torch.arange(0, batch_size * max_input_len, max_input_len, dtype=torch.int32, device=Logics.device)
-    B_Seqlen = torch.full((batch_size,), max_input_len, dtype=torch.int32, device=Logics.device)
-    B_Start_Loc = B_Start_Loc
+    total_len = Logics.shape[1]
+    base_len, rem = divmod(total_len, batch_size)
+    seq_lens = [base_len + (1 if i < rem else 0) for i in range(batch_size)]
+    start_locs = [sum(seq_lens[:i]) for i in range(batch_size)]
+    B_Start_Loc = torch.tensor(start_locs, dtype=torch.int32, device=Logics.device)
+    B_Seqlen = torch.tensor(seq_lens, dtype=torch.int32, device=Logics.device)
     Prob_Out = torch.empty_like(Logics)
     max_input_len = B_Seqlen.max().item()
     BLOCK_SIZE = triton.next_power_of_2(max_input_len)

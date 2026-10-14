@@ -24,6 +24,7 @@ def chunk_simple_gla_fwd_kernel_o(
     s_v_t,
     s_h_h,
     s_h_t,
+    s_h_c,
     scale,
     T: tl.constexpr,
     K: tl.constexpr,
@@ -43,7 +44,7 @@ def chunk_simple_gla_fwd_kernel_o(
     for i_k in range(tl.cdiv(K, BK)):
         p_q = tl.make_block_ptr(q + i_bh * s_k_h, (T, K), (s_k_t, 1), (i_t * BT, i_k * BK), (BT, BK), (1, 0))
         p_k = tl.make_block_ptr(k + i_bh * s_k_h, (K, T), (1, s_k_t), (i_k * BK, i_t * BT), (BK, BT), (0, 1))
-        p_h = tl.make_block_ptr(h + i_bh * s_h_h + i_t * K * V, (K, V), (s_h_t, 1), (i_k * BK, i_v * BV), (BK, BV), (1, 0))
+        p_h = tl.make_block_ptr(h + i_bh * s_h_h + i_t * s_h_c, (K, V), (s_h_t, 1), (i_k * BK, i_v * BV), (BK, BV), (1, 0))
         # [BT, BK]
         b_q = tl.load(p_q, boundary_check=(0, 1))
         # [BK, BT]
@@ -54,7 +55,7 @@ def chunk_simple_gla_fwd_kernel_o(
         b_s += tl.dot(b_q, b_k, allow_tf32=False)
 
     p_g = tl.make_block_ptr(g + i_bh * T, (T,), (1,), (i_t * BT,), (BT,), (0,))
-    b_g = tl.load(p_g, boundary_check=(0,))
+    b_g = tl.load(p_g, boundary_check=(0,)).to(tl.float32)  # tl.exp only accepts fp32/fp64
     b_o = b_o * tl.exp(b_g)[:, None]
     b_s = b_s * tl.exp(b_g[:, None] - b_g[None, :])
     b_s = tl.where(m_s, b_s, 0)
@@ -67,18 +68,27 @@ def chunk_simple_gla_fwd_kernel_o(
 
 def triton_chunk_gla_simple(h, q, k, v, g, BT=32, scale=0.1):
     # Kernel call
+    # The kernel indexes every tensor with contiguous strides (q/k share strides, o shares v's).
+    q, k, v, h, g = (x.contiguous() for x in (q, k, v, h, g))
     B, H, T, K, V = *k.shape, v.shape[-1]
+    NT = triton.cdiv(T, BT)
+    assert q.shape == k.shape, f"q {tuple(q.shape)} and k {tuple(k.shape)} must both be [B, H, T, K]"
+    assert v.shape[:3] == (B, H, T), f"v {tuple(v.shape)} must be [B, H, T, V] with B, H, T of k {tuple(k.shape)}"
+    assert g.shape == (B, H, T), f"g {tuple(g.shape)} must be [B, H, T]"
+    # h holds the per-chunk states [B, H, NT*K, V], or a single state [B, H, K, V] shared by all chunks.
+    assert h.dim() == 4 and h.shape[:2] == (B, H) and h.shape[3] == V and h.shape[2] in (K, NT * K), \
+        f"h {tuple(h.shape)} must be [B, H, NT*K, V] or [B, H, K, V] (B={B}, H={H}, NT={NT}, K={K}, V={V})"
+    s_h_c = 0 if h.shape[2] == K else K * h.stride(2)  # offset between consecutive chunk states
     o = torch.empty_like(v)
     BK = min(triton.next_power_of_2(K), 64)
     BV = min(triton.next_power_of_2(V), 64)
     NV = triton.cdiv(V, BV)
-    NT = triton.cdiv(T, BT)
     grid = (NV, NT, B * H)
     chunk_simple_gla_fwd_kernel_o[grid](
         q, k, v, h, g, o,
         q.stride(1), q.stride(2),
         v.stride(1), v.stride(2),
-        h.stride(1), h.stride(2),
+        h.stride(1), h.stride(2), s_h_c,
         scale,
         T=T, K=K, V=V, BT=BT, BK=BK, BV=BV
     )

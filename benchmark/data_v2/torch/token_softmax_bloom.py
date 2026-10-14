@@ -12,8 +12,16 @@ def torch_token_softmax_bloom(Logics):
     Returns:
         Prob_Out: same shape as Logics
     """
-    B_Start_Loc = torch.tensor([0, 1025, 2050, 3075], device=Logics.device, dtype=torch.int32)
-    B_Seqlen = torch.tensor([1025, 1025, 1025, 1025], device=Logics.device, dtype=torch.int32)
+    # Logics is [head_num, sum(seq_lens)]. Split its token axis into `batch`
+    # contiguous segments derived from the actual width (4 x 1025 for the
+    # canonical (12, 4100) input), matching triton_token_softmax_bloom.
+    batch = 4
+    total_len = Logics.shape[1]
+    base_len, rem = divmod(total_len, batch)
+    seq_lens = [base_len + (1 if i < rem else 0) for i in range(batch)]
+    start_locs = [sum(seq_lens[:i]) for i in range(batch)]
+    B_Start_Loc = torch.tensor(start_locs, device=Logics.device, dtype=torch.int32)
+    B_Seqlen = torch.tensor(seq_lens, device=Logics.device, dtype=torch.int32)
     Prob_Out = torch.empty_like(Logics, dtype=Logics.dtype, device=Logics.device)
     head_num = Logics.shape[0]
     batch = B_Start_Loc.shape[0]
