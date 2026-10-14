@@ -326,6 +326,9 @@ class ParallelBasedFunction(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, q, k, v, scale):
+        # The kernels index every tensor with the strides of a dense [B, H, T, D] layout
+        # (q's strides are reused for k/dq/dk, v's for o/do/dv), so materialize contiguous inputs.
+        q, k, v = q.contiguous(), k.contiguous(), v.contiguous()
         BTL, BTS = 128, 32
         assert BTL % BTS == 0
         BK = min(128, triton.next_power_of_2(k.shape[-1]))
@@ -359,6 +362,10 @@ class ParallelBasedFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, do, dz):
         q, k, v = ctx.saved_tensors
+        # Incoming gradients may be broadcast / non-contiguous (e.g. from out.sum().backward(),
+        # whose grad is an expanded scalar with a single element of storage). The kernel reads
+        # do with v's dense strides and dz as a dense [B, H, T] buffer, so materialize them.
+        do, dz = do.contiguous(), dz.contiguous()
         scale = ctx.scale
         BTL, BTS = 64, 32
         assert BTL % BTS == 0

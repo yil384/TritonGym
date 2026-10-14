@@ -73,7 +73,19 @@ def chunk_delta_rule_fwd_kernel_h(
         tl.store(p_ht, b_h.to(p_ht.dtype.element_ty), boundary_check=(0, 1))
 
 def triton_chunk_delta_fwd(k, w, u, BT=32, initial_state=None, final_state=None):
+    # The kernel indexes k/w with k's strides, u/v_new with u's strides and the states as
+    # contiguous [B, H, K, V]; make sure every tensor really has that layout and those sizes.
+    k, w, u = k.contiguous(), w.contiguous(), u.contiguous()
     B, H, T, K, V = *k.shape, u.shape[-1]
+    assert w.shape == k.shape, f"w {tuple(w.shape)} must match k {tuple(k.shape)} = [B, H, T, K]"
+    assert u.shape[:3] == (B, H, T), f"u {tuple(u.shape)} must be [B, H, T, V] with B, H, T of k {tuple(k.shape)}"
+    if initial_state is not None:
+        assert initial_state.shape == (B, H, K, V), \
+            f"initial_state {tuple(initial_state.shape)} must be [B, H, K, V] = {(B, H, K, V)}"
+        initial_state = initial_state.contiguous()
+    if final_state is not None:
+        assert final_state.shape == (B, H, K, V) and final_state.is_contiguous(), \
+            f"final_state {tuple(final_state.shape)} must be a contiguous [B, H, K, V] = {(B, H, K, V)} tensor"
 
     BK = triton.next_power_of_2(K)
     assert BK <= 256, "current kernel does not support head dimension larger than 256."
@@ -112,21 +124,21 @@ def test_chunk_fwd_h_fn():
     B, H, T, K, V = 2, 4, 128, 64, 64  # Example dimensions
     BT = 32  # Block size for T dimension
 
-    k = torch.randn(B, H, K, T, dtype=torch.float32, device='cuda')
+    k = torch.randn(B, H, T, K, dtype=torch.float32, device='cuda')
     w = torch.randn(B, H, T, K, dtype=torch.float32, device='cuda')
     u = torch.randn(B, H, T, V, dtype=torch.float32, device='cuda')
 
     results = {}
 
     # Test without initial and final states
-    h, v_new = triton_chunk_delta_fwd(k, w, u, BT, initial_state=None, final_state=None)
-    results['test_case_1'] = (h.shape, v_new.shape)
+    v_new = triton_chunk_delta_fwd(k, w, u, BT, initial_state=None, final_state=None)
+    results['test_case_1'] = v_new.shape
 
     # Test with initial and final states
     initial_state = torch.zeros(B, H, K, V, dtype=torch.float32, device='cuda')
     final_state = torch.zeros(B, H, K, V, dtype=torch.float32, device='cuda')
-    h, v_new = triton_chunk_delta_fwd(k, w, u, BT, initial_state=initial_state, final_state=final_state)
-    results['test_case_2'] = (h.shape, v_new.shape)
+    v_new = triton_chunk_delta_fwd(k, w, u, BT, initial_state=initial_state, final_state=final_state)
+    results['test_case_2'] = (v_new.shape, final_state.shape)
 
     return results
 

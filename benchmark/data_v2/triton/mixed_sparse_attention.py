@@ -47,20 +47,15 @@ def _triton_mixed_sparse_attn_fwd_kernel(
     l_i = tl.zeros([BLOCK_M], dtype=tl.float32)
     acc = tl.zeros([BLOCK_M, BLOCK_DMODEL], dtype=tl.float32)
     qk_scale = sm_scale * 1.44269504
-    q = tl.load(q_ptrs)
+    m_mask = offs_m[:, None] < seqlen
+    q = tl.load(q_ptrs, mask=m_mask, other=0.0)
     q = (q * qk_scale).to(dtype)
 
-    m_mask = offs_m[:, None] < seqlen
-
-    # Set maximum number of blocks
-    max_num_blks = 8  # Adjust based on actual requirements
-    for block_index in range(max_num_blks):
-        # Use conditional mask instead of break
-        cond = block_index < num_blks
-        # Only execute the following when cond is True
-        start_n = tl.load(blks_ptr + block_index, mask=cond)
+    # Block-sparse part: num_blks key blocks starting at block_offset[..., :num_blks]
+    for block_index in range(num_blks):
+        start_n = tl.load(blks_ptr + block_index)
         cols = start_n + offs_n
-        n_mask = (cols < seqlen) & cond[:, None]
+        n_mask = cols < seqlen
         k = tl.load(k_ptrs + cols[None, :] * stride_kn, mask=n_mask[None, :], other=0.0)
         v = tl.load(v_ptrs + cols[:, None] * stride_vn, mask=n_mask[:, None], other=0.0)
         qk = tl.zeros([BLOCK_M, BLOCK_N], dtype=tl.float32)
@@ -76,13 +71,10 @@ def _triton_mixed_sparse_attn_fwd_kernel(
         l_i = l_i * alpha + tl.sum(p, 1)
         m_i = m_i_new
 
-    # Set maximum number of columns
-    max_num_cols = 16  # Adjust based on actual requirements
-    for start_n in range(0, max_num_cols, BLOCK_N):
-        # Use conditional mask instead of break
-        cond = start_n < num_cols
-        n_mask = (start_n + offs_n < num_cols) & cond
-        cols = tl.load(cols_ptr + start_n + offs_n, mask=cond[:, None], other=0)
+    # Vertical (column) part: num_cols individual key columns from column_index[..., :num_cols]
+    for start_n in range(0, num_cols, BLOCK_N):
+        n_mask = start_n + offs_n < num_cols
+        cols = tl.load(cols_ptr + start_n + offs_n, mask=n_mask, other=0)
         k = tl.load(k_ptrs + cols[None, :] * stride_kn, mask=n_mask[None, :], other=0.0)
         v = tl.load(v_ptrs + cols[:, None] * stride_vn, mask=n_mask[:, None], other=0.0)
         qk = tl.zeros([BLOCK_M, BLOCK_N], dtype=tl.float32)
@@ -112,17 +104,24 @@ def triton_mixed_sparse_attention(
     Lq, Lk, Lv = q.shape[-1], k.shape[-1], v.shape[-1]
     assert Lq == Lk and Lk == Lv
     assert Lk in {16, 32, 64, 128}
+    
+    assert k.shape == q.shape and v.shape == q.shape
+    # the kernel uses q's batch/head offsets for Out and k's for V: give them identical layouts
+    q, k, v = q.contiguous(), k.contiguous(), v.contiguous()
     o = torch.zeros_like(q)
-    
     B, H, N_CTX, D_HEAD = q.shape
+    # Fixed sparse pattern: one key block at offset 0 (causal) + one vertical column (index 0)
+    # for every row block. One entry per launched row block -> cdiv, so a partial last row
+    # block (N_CTX % block_size_M != 0) still has valid metadata.
+    num_rows = triton.cdiv(N_CTX, block_size_M)
     seqlens = torch.full((B,), N_CTX, dtype=torch.int32, device=q.device)
-    block_count = torch.ones((B, H, N_CTX // block_size_M), dtype=torch.int32, device=q.device)
-    block_offset = torch.zeros((B, H, N_CTX // block_size_M, 4), dtype=torch.int32, device=q.device)
-    column_count = torch.ones((B, H, N_CTX // block_size_M), dtype=torch.int32, device=q.device)
-    column_index = torch.zeros((B, H, N_CTX // block_size_M, 8), dtype=torch.int32, device=q.device)
-    
+    block_count = torch.ones((B, H, num_rows), dtype=torch.int32, device=q.device)
+    block_offset = torch.zeros((B, H, num_rows, 4), dtype=torch.int32, device=q.device)
+    column_count = torch.ones((B, H, num_rows), dtype=torch.int32, device=q.device)
+    column_index = torch.zeros((B, H, num_rows, 8), dtype=torch.int32, device=q.device)
+
     grid = (triton.cdiv(q.shape[2], block_size_M), q.shape[0] * q.shape[1], 1)
-    dtype = tl.bfloat16 if q.dtype == torch.bfloat16 else tl.float16
+    dtype = {torch.bfloat16: tl.bfloat16, torch.float32: tl.float32}.get(q.dtype, tl.float16)
     _triton_mixed_sparse_attn_fwd_kernel[grid](
         q, k, v, seqlens, sm_scale,
         block_count, block_offset, column_count, column_index,

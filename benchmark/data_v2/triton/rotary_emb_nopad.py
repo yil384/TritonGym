@@ -130,6 +130,7 @@ def fused_rotary_embedding_kernel_v2(
     block_size,
     q_total_tokens,
     Q_HEAD_NUM: tl.constexpr,
+    KV_GROUP_NUM: tl.constexpr,
     HEAD_DIM: tl.constexpr,
 ):
     block_head_index = tl.program_id(0)
@@ -142,22 +143,12 @@ def fused_rotary_embedding_kernel_v2(
 
     off_q0 = block_token_index * q_token_stride + block_head_index * q_head_stride + dim_range0 * head_dim_stride
     off_q1 = block_token_index * q_token_stride + block_head_index * q_head_stride + dim_range1 * head_dim_stride
-    off_k0 = block_token_index * k_token_stride + block_head_index * k_head_stride + dim_range0 * head_dim_stride
-    off_k1 = block_token_index * k_token_stride + block_head_index * k_head_stride + dim_range1 * head_dim_stride
 
     loaded_q0 = tl.load(
         q + off_q0,
     )
     loaded_q1 = tl.load(
         q + off_q1,
-    )
-
-    loaded_k0 = tl.load(
-        k + off_k0,
-    )
-
-    loaded_k1 = tl.load(
-        k + off_k1,
     )
 
     off_cos_sin = block_token_index * cos_token_stride + dim_range0 * cos_stride
@@ -168,37 +159,53 @@ def fused_rotary_embedding_kernel_v2(
     out_q0 = loaded_q0 * loaded_cos - loaded_q1 * loaded_sin
     out_q1 = loaded_q0 * loaded_sin + loaded_q1 * loaded_cos
 
-    out_k0 = loaded_k0 * loaded_cos - loaded_k1 * loaded_sin
-    out_k1 = loaded_k0 * loaded_sin + loaded_k1 * loaded_cos  # total_tokens, head_num, head_dim
+    # k and k_cache only have Q_HEAD_NUM // KV_GROUP_NUM heads: the first q head of each
+    # group rotates the shared kv head and writes it into the cache.
+    handle_kv = block_head_index % KV_GROUP_NUM == 0
+    if handle_kv:
+        k_head_index = block_head_index // KV_GROUP_NUM
+        off_k0 = block_token_index * k_token_stride + k_head_index * k_head_stride + dim_range0 * head_dim_stride
+        off_k1 = block_token_index * k_token_stride + k_head_index * k_head_stride + dim_range1 * head_dim_stride
 
-    past_kv_seq_len = tl.load(context_lengths + block_token_index) - 1
+        loaded_k0 = tl.load(
+            k + off_k0,
+        )
 
-    last_block_idx = past_kv_seq_len // block_size
-    block_table_ptr = BLOCK_TABLES + block_token_index * bts_stride
-    block_ids = tl.load(block_table_ptr + last_block_idx * btb_stride, mask=(block_token_index < q_total_tokens))
-    offsets_in_last_block = (past_kv_seq_len % block_size) * cachebs_stride
+        loaded_k1 = tl.load(
+            k + off_k1,
+        )
 
-    kv_range0 = (
-        block_ids * cacheb_stride
-        + block_head_index * cacheh_stride
-        + offsets_in_last_block
-        + dim_range0 * cached_stride
-    )
-    kv_range1 = (
-        block_ids * cacheb_stride
-        + block_head_index * cacheh_stride
-        + offsets_in_last_block
-        + dim_range1 * cached_stride
-    )
+        out_k0 = loaded_k0 * loaded_cos - loaded_k1 * loaded_sin
+        out_k1 = loaded_k0 * loaded_sin + loaded_k1 * loaded_cos  # total_tokens, head_num, head_dim
 
-    tl.store(
-        kv_cache + kv_range0,
-        out_k0,
-    )
-    tl.store(
-        kv_cache + kv_range1,
-        out_k1,
-    )
+        past_kv_seq_len = tl.load(context_lengths + block_token_index) - 1
+
+        last_block_idx = past_kv_seq_len // block_size
+        block_table_ptr = BLOCK_TABLES + block_token_index * bts_stride
+        block_ids = tl.load(block_table_ptr + last_block_idx * btb_stride, mask=(block_token_index < q_total_tokens))
+        offsets_in_last_block = (past_kv_seq_len % block_size) * cachebs_stride
+
+        kv_range0 = (
+            block_ids * cacheb_stride
+            + k_head_index * cacheh_stride
+            + offsets_in_last_block
+            + dim_range0 * cached_stride
+        )
+        kv_range1 = (
+            block_ids * cacheb_stride
+            + k_head_index * cacheh_stride
+            + offsets_in_last_block
+            + dim_range1 * cached_stride
+        )
+
+        tl.store(
+            kv_cache + kv_range0,
+            out_k0,
+        )
+        tl.store(
+            kv_cache + kv_range1,
+            out_k1,
+        )
 
     # concat
     tl.store(
@@ -232,6 +239,10 @@ def triton_rotary_emb_nopad(
     """
     q_total_tokens, q_head_num, head_dim = q.shape
     assert q.size(0) == k.size(0)
+    assert k.size(2) == head_dim and q.stride(2) == k.stride(2)  # one head_dim_stride is used for q and k
+    # cos/sin are indexed by token index (row) and the first head_dim // 2 columns
+    assert cos.size(0) >= q_total_tokens and sin.size(0) >= q_total_tokens
+    assert cos.size(1) >= head_dim // 2 and sin.shape == cos.shape and sin.stride() == cos.stride()
     BLOCK_TOKENS = 4
 
     if head_dim >= 512:
@@ -274,6 +285,13 @@ def triton_rotary_emb_nopad(
             num_warps=num_warps,
         )
     else:
+        # Decoding path: one new token per sequence, so token i uses kv_lengths[i] / block_tables[i].
+        num_blocks, cache_kv_heads, block_size, cache_head_dim = k_cache.shape
+        assert cache_kv_heads == k_head_num and cache_head_dim == head_dim
+        assert kv_lengths.numel() == q_total_tokens and block_tables.size(0) == q_total_tokens
+        # the slot written for token i is block_tables[i, (kv_lengths[i] - 1) // block_size]
+        assert int(kv_lengths.min()) >= 1 and int(kv_lengths.max()) <= block_tables.size(1) * block_size
+        assert int(block_tables.min()) >= 0 and int(block_tables.max()) < num_blocks
         grid = (triton.next_power_of_2(q_head_num), q_total_tokens)
         fused_rotary_embedding_kernel_v2[grid](
             q,
@@ -299,6 +317,7 @@ def triton_rotary_emb_nopad(
             k_cache.size(-2),
             q_total_tokens,
             Q_HEAD_NUM=q_head_num,
+            KV_GROUP_NUM=kv_group_num,
             HEAD_DIM=head_dim,
             num_warps=num_warps,
         )
@@ -333,10 +352,10 @@ def test_rotary_embedding():
 
     # Create additional tensors for branch 2
     num_blocks = 4  # Number of blocks in k_cache
-    batch_size = 2  # Batch size
+    batch_size = total_tokens  # Batch size (decoding: one new token per sequence)
     k_cache = torch.randn((num_blocks, kv_head_num, block_size, head_dim), dtype=torch.float32, device='cuda')  # Key cache
     block_tables = torch.randint(0, num_blocks, (batch_size, num_blocks), device='cuda')  # Block tables
-    kv_lengths = torch.randint(1, total_tokens, (batch_size,), device='cuda')  # KV lengths
+    kv_lengths = torch.randint(1, num_blocks * block_size + 1, (batch_size,), device='cuda')  # KV lengths
 
     # Call rotary_embedding branch 2 (with k_cache)
     triton_rotary_emb_nopad(q, k, cos, sin, k_cache=k_cache, block_tables=block_tables, kv_lengths=kv_lengths)

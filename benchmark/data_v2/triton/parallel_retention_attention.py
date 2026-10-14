@@ -274,6 +274,10 @@ class ParallelRetentionFunction(torch.autograd.Function):
     @contiguous
     @custom_fwd(device_type='cuda')
     def forward(ctx, q, k, v):
+        # q and k are both indexed with q's strides and v/o share v's strides, over q's B, H, T.
+        assert q.shape == k.shape, f"q {tuple(q.shape)} and k {tuple(k.shape)} must both be [B, H, T, D_qk]"
+        assert v.dim() == 4 and v.shape[:3] == q.shape[:3], \
+            f"v {tuple(v.shape)} must be [B, H, T, D_v] with B, H, T of q {tuple(q.shape)}"
         BTL, BTS = 128, 32
         assert BTL % BTS == 0
         BK = min(128, triton.next_power_of_2(k.shape[-1]))
@@ -368,19 +372,23 @@ def test_parallel_retention():
 
     # 2. Case 2: d_head_qk set to 32, d_head_v set to 128
     q_2 = torch.randn(batch_size, n_heads, seq_len, 32, device='cuda', dtype=torch.float32, requires_grad=True)
+    k_2 = torch.randn(batch_size, n_heads, seq_len, 32, device='cuda', dtype=torch.float32, requires_grad=True)
     v_2 = torch.randn(batch_size, n_heads, seq_len, 128, device='cuda', dtype=torch.float32, requires_grad=True)
-    output_2 = triton_parallel_retention_attention(q_2, k, v_2)  # With changed d_head_qk and d_head_v
+    output_2 = triton_parallel_retention_attention(q_2, k_2, v_2)  # With changed d_head_qk and d_head_v
     result_gold_2 = output_2.sum().item()  # Placeholder for result validation
 
     # 3. Case 3: d_head_qk set to 128, d_head_v set to 64
     q_3 = torch.randn(batch_size, n_heads, seq_len, 128, device='cuda', dtype=torch.float32, requires_grad=True)
-    output_3 = triton_parallel_retention_attention(q_3, k, v)  # With d_head_qk = 128
+    k_3 = torch.randn(batch_size, n_heads, seq_len, 128, device='cuda', dtype=torch.float32, requires_grad=True)
+    output_3 = triton_parallel_retention_attention(q_3, k_3, v)  # With d_head_qk = 128
     result_gold_3 = output_3.sum().item()  # Placeholder for result validation
 
     # 4. Case 4: Test larger batch size
     batch_size_2 = 4  # Increase batch size for larger computations
     q_4 = torch.randn(batch_size_2, n_heads, seq_len, d_head_qk, device='cuda', dtype=torch.float32, requires_grad=True)
-    output_4 = triton_parallel_retention_attention(q_4, k, v)  # Larger batch size
+    k_4 = torch.randn(batch_size_2, n_heads, seq_len, d_head_qk, device='cuda', dtype=torch.float32, requires_grad=True)
+    v_4 = torch.randn(batch_size_2, n_heads, seq_len, d_head_v, device='cuda', dtype=torch.float32, requires_grad=True)
+    output_4 = triton_parallel_retention_attention(q_4, k_4, v_4)  # Larger batch size
     result_gold_4 = output_4.sum().item()  # Placeholder for result validation
 
     # Collecting results for all cases

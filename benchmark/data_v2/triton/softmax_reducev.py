@@ -62,9 +62,16 @@ def triton_softmax_reducev(logics, v):
     batch, head = logics.shape[1] // max_seq_len, logics.shape[0]
     max_input_len = max_seq_len
     device = logics.device
-    b_loc = torch.randint(0, max_seq_len, (batch, max_seq_len), device=device, dtype=torch.int32)
-    b_start_loc = torch.randint(0, max_seq_len, (batch,), device=device, dtype=torch.int32)
-    b_seq_len = torch.randint(1, max_seq_len + 1, (batch,), device=device, dtype=torch.int32)
+    # Paged-attention metadata. Generated from a fixed-seed CPU generator so that the
+    # Triton kernel and the PyTorch reference see the same metadata (and repeated calls
+    # are reproducible), and laid out so every access is in bounds:
+    #   b_loc[b, j]    : V token index in [0, max_seq_len)            (V is (head, max_seq_len, d))
+    #   b_start_loc[b] : b * max_input_len, batch b owns Logics columns [b*L, b*L + seq_len)
+    #   b_seq_len[b]   : in [1, max_input_len]
+    gen = torch.Generator(device="cpu").manual_seed(0)
+    b_loc = torch.randint(0, max_seq_len, (batch, max_seq_len), generator=gen, dtype=torch.int32).to(device)
+    b_start_loc = (torch.arange(batch, dtype=torch.int32) * max_input_len).to(device)
+    b_seq_len = torch.randint(1, max_seq_len + 1, (batch,), generator=gen, dtype=torch.int32).to(device)
     other_kv_index = 0
     o = torch.empty((b_seq_len.shape[0], logics.shape[0], v.shape[2]), device=logics.device, dtype=logics.dtype)
     BLOCK = 64
@@ -74,7 +81,8 @@ def triton_softmax_reducev(logics, v):
     _fwd_kernel[grid](
         logics, v, o, b_loc, b_start_loc, b_seq_len, max_input_len,
         logics.stride(0), logics.stride(1),
-        v.stride(0), v.stride(1), v.stride(2),
+        # V is laid out (head, max_seq_len, d_model): token stride is dim 1, head stride is dim 0
+        v.stride(1), v.stride(0), v.stride(2),
         o.stride(0), o.stride(1), o.stride(2),
         b_loc.stride(0), b_loc.stride(1),
         other_kv_index,

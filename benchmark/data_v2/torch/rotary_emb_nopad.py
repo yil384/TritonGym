@@ -44,16 +44,16 @@ def torch_rotary_emb_nopad(
         sin_row = sin[token_idx, :head_dim//2].to(q.dtype)
 
         for qh in range(q_head_num):
-            q0 = q_out[token_idx, qh, :head_dim//2]
-            q1 = q_out[token_idx, qh, head_dim//2:]
+            q0 = q_out[token_idx, qh, :head_dim//2].clone()  # clone: the slice is overwritten below
+            q1 = q_out[token_idx, qh, head_dim//2:].clone()
             q_out[token_idx, qh, :head_dim//2] = q0 * cos_row - q1 * sin_row
             q_out[token_idx, qh, head_dim//2:] = q0 * sin_row + q1 * cos_row
 
             # Handle corresponding k
             if qh % kv_group_num == 0:
                 kh = qh // kv_group_num
-                k0 = k_out[token_idx, kh, :head_dim//2]
-                k1 = k_out[token_idx, kh, head_dim//2:]
+                k0 = k_out[token_idx, kh, :head_dim//2].clone()
+                k1 = k_out[token_idx, kh, head_dim//2:].clone()
                 k_out[token_idx, kh, :head_dim//2] = k0 * cos_row - k1 * sin_row
                 k_out[token_idx, kh, head_dim//2:] = k0 * sin_row + k1 * cos_row
 
