@@ -23,7 +23,12 @@ build/
 # Environment
 .env
 .venv/
+.venv-ci/
 venv/
+.pytest_cache/
+
+# Local / CI validation reports (attach to a PR instead of committing)
+reports/
 
 # IDE
 .vscode/

@@ -43,14 +43,26 @@ PR title: `[operator] <op_name>`. Description should include what category the o
 ## Setup
 
 ```bash
-git clone https://github.com/yil384/TritonGym-public
-cd TritonGym-public
+git clone https://github.com/yil384/TritonGym.git
+cd TritonGym
 pip install -r requirements.txt
 ```
 
 Requires: Python 3.10+, PyTorch 2.5+, Triton 3.1+, CUDA 12.4+.
 
 A working Triton-capable GPU is needed for evaluation (any single A100 / H100 / consumer 30/40 series).
+
+## First contribution and checks
+
+For the scoped reference-test task, read [the first-contribution guide](docs/first-contribution.md).
+It lists the two files to change, the five input cases, the acceptance command,
+and the GPU evidence to attach to a PR.
+
+Pull requests run `python -m pytest tests/ci` on a GitHub-hosted CPU runner.
+The student starter branch includes additional acceptance tests that initially
+fail on the legacy scripts; fixing those failures is the task. CPU checks do
+not validate Triton execution on a GPU. Use the separate GPU command in the
+guide before reporting GPU validation.
 
 ## Code of conduct
 
