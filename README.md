@@ -160,6 +160,9 @@ Each operator in `benchmark.json` contains:
 
 ## Adding New Operators
 
+New contributors can start with the [reference-test task](docs/first-contribution.md),
+which includes exact files, local checks, and a GPU verification command.
+
 1. Create `torch/<op_name>.py` with function `torch_<op_name>(...)`
 2. Create `triton/<op_name>.py` with function `triton_<op_name>(...)`
 3. Optionally create `tests/<op_name>.py` for standalone testing

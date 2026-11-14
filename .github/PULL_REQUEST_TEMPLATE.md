@@ -38,3 +38,12 @@
 
 - [ ] Tested locally on at least one operator
 - [ ] If agent / scoring changed, included before/after Pass@1 / Perf@1
+
+### Reference-test onboarding task (delete for unrelated PRs)
+
+- [ ] `python -m pytest tests/ci -q` passes with the starter branch's complete acceptance tests
+- [ ] All five original input cases remain covered; logs show actual shapes
+- [ ] Bad values, NaN/Inf, mismatched shapes, and runtime errors produce a nonzero exit
+- [ ] The existing `max_abs <= 0.01` rule and reference computations are unchanged
+- [ ] Attached `reports/reference-gpu.json` from the reviewed commit on a real GPU, or clearly marked the remaining GPU blocker
+- [ ] Included the exact commands and GPU / Torch / Triton / CUDA versions

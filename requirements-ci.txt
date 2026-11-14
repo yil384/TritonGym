@@ -1,0 +1,3 @@
+# CPU test dependencies only. Install the CPU Torch wheel separately; see CI.
+pytest==8.3.5
+numpy==2.1.3
