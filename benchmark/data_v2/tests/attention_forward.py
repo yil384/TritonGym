@@ -5,7 +5,13 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../..'))
 
 from benchmark.data_v2.triton.attention_forward import triton_attention_forward
-from benchmark.data_v2.torch.attention_forward import torch_attention_forward  
+from benchmark.data_v2.torch.attention_forward import torch_attention_forward
+from benchmark.data_v2.tests._reference_check import (
+    ReferenceReport,
+    check_outputs,
+    run_as_script,
+    seed_case,
+)
 
 
 def test_attention_forward():
@@ -20,7 +26,12 @@ def test_attention_forward():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    report = ReferenceReport("attention_forward")
+
     for idx, dim in enumerate(input_shapes):
+        # Fixed, logged seed (42 + case index) so each case can be reproduced
+        seed = seed_case(idx)
+
         # Triton kernel input must be float16
         q = torch.randn(dim[0], dtype=torch.float16, device=device)
         k = torch.randn(dim[1], dtype=torch.float16, device=device)
@@ -33,16 +44,16 @@ def test_attention_forward():
             # Triton forward: both input and output are float16
             triton_out = triton_attention_forward(q, k, v)
 
-            # Compare maximum absolute error
-            max_abs = (torch_out - triton_out).abs().max().item()
-
-            print(f"\033[92m OK \033[0m", end=' ')
-            print(f"attention case {idx}: shape=({dim[0][0]},{dim[0][1]},{dim[0][2]},{dim[0][3]}) max_abs={max_abs:.3e}")
+            # Shape, finiteness and maximum absolute error; raises on failure
+            max_abs = check_outputs(torch_out, triton_out)
+            report.passed(idx, [q, k, v], seed, max_abs)
 
         except Exception as e:
-            print(f"\033[91m ERROR \033[0m", end=' ')
-            print(f"attention case {idx}: shape=({dim[0][0]},{dim[0][1]},{dim[0][2]},{dim[0][3]}) : {e}")
+            report.failed(idx, [q, k, v], seed, e)
+
+    # Raises ReferenceTestFailed if any case failed
+    report.finish()
 
 
 if __name__ == "__main__":
-    test_attention_forward()
+    sys.exit(run_as_script(test_attention_forward))
