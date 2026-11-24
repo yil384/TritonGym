@@ -4,6 +4,7 @@ import json
 import textwrap
 import torch
 from pathlib import Path
+from benchmark.eval.correctness import compare_outputs
 from benchmark.eval.runner import GenericEvaluator, run_single, TaskSpec, EvalConfig
 
 
@@ -49,22 +50,10 @@ def main():
     # Full file already; ensure stripped
     torch_module_src = textwrap.dedent(torch_module_src).strip('\n') + '\n'
 
-    # Local correctness metrics (max abs/rel error)
-    def _correctness(out, ref):
-        with torch.no_grad():
-            diff = (out - ref).abs()
-            denom = ref.abs().clamp_min(1e-8)
-            rel = diff / denom
-            # Replace non-finite with 0 for stability
-            rel = torch.where(torch.isfinite(rel), rel, torch.zeros_like(rel))
-            max_abs = torch.nan_to_num(diff, nan=0.0, posinf=float('inf'), neginf=float('inf')).max().item()
-            max_rel = rel.max().item()
-        return {"max_abs": max_abs, "max_rel": max_rel}
-
     spec_obj = TaskSpec(
         name=args.operator,
         reference_source=torch_module_src,
-        correctness_fn=_correctness,
+        correctness_fn=compare_outputs,
         input_shapes=json_shapes,
         flops_fn=None,
     )

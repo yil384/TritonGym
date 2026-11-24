@@ -44,6 +44,13 @@ class EvalConfig:
     shape_index: int = 0
 
 
+def _clone_inputs(args: Tuple[Any, ...], kwargs: Dict[str, Any]) -> Tuple[Tuple[Any, ...], Dict[str, Any]]:
+    """Copy every tensor input so one call cannot change what another call receives."""
+    def clone(value: Any) -> Any:
+        return value.clone() if torch.is_tensor(value) else value
+    return tuple(clone(a) for a in args), {k: clone(v) for k, v in kwargs.items()}
+
+
 class GenericEvaluator:
     def __init__(self, cfg: EvalConfig, spec: TaskSpec):
         self.cfg = cfg
@@ -107,9 +114,12 @@ class GenericEvaluator:
         cfg = self.cfg
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         args, kwargs = self._materialize_inputs(device)
+        # The reference and the generated code each get their own copy of the inputs. Operators
+        # that update an input in place would otherwise hand the finished answer to the other side.
+        ref_args, ref_kwargs = _clone_inputs(args, kwargs)
         # Obtain reference output
         if spec.reference_fn is not None:
-            ref = spec.reference_fn(*args, **kwargs)
+            ref = spec.reference_fn(*ref_args, **ref_kwargs)
         elif spec.reference_source is not None:
             # reference_source is now a FULL python file (with imports / optional __main__);
             # execute and discover callable using heuristics similar to loader.
@@ -144,7 +154,7 @@ class GenericEvaluator:
                 return RunResult(gen=GenerationResult(raw=code, metadata={}), compile_success=False, runtime_ms=None, gflops=None, metrics={"error": "no reference callable found"}, notes="reference missing")
             try:
                 # Call reference directly assuming standard signature (no ctx/self/context handling)
-                ref = ref_callable(*args, **kwargs)
+                ref = ref_callable(*ref_args, **ref_kwargs)
             except Exception as e:
                 return RunResult(gen=GenerationResult(raw=code, metadata={}), compile_success=False, runtime_ms=None, gflops=None, metrics={"error": f"reference run failure: {e}"}, notes="reference runtime failure")
         else:
@@ -172,7 +182,12 @@ class GenericEvaluator:
             return RunResult(gen=GenerationResult(raw=code, metadata={}), compile_success=True, runtime_ms=None, gflops=None, metrics={"error": "expected a callable function"})
         bench_op = op
         try:
-            out, ms = self._bench(bench_op, args, kwargs, cfg.repeat, cfg.warmup)
+            # Correctness is judged on one call with untouched inputs; the timed calls below
+            # reuse their inputs, so their last output is not a single application for
+            # in-place operators.
+            check_args, check_kwargs = _clone_inputs(args, kwargs)
+            out = bench_op(*check_args, **check_kwargs)
+            _, ms = self._bench(bench_op, args, kwargs, cfg.repeat, cfg.warmup)
         except Exception as e:
             return RunResult(gen=GenerationResult(raw=code, metadata={}), compile_success=True, runtime_ms=None, gflops=None, metrics={"error": str(e)}, notes="runtime failure")
         flops = spec.flops_fn(args, kwargs) if spec.flops_fn else None

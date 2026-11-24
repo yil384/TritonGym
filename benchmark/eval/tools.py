@@ -10,6 +10,7 @@ from typing import Tuple
 import torch
 from urllib.parse import quote_plus, urlparse, parse_qs, urljoin
 
+from .correctness import TOLERANCE, compare_outputs, mismatch_reason
 from .runner import GenericEvaluator, TaskSpec, EvalConfig
 
 BENCHMARK_JSON = Path("benchmark/data_v2/benchmark.json")
@@ -30,20 +31,10 @@ def _load_spec(op: str) -> Tuple[str, list]:
 def _make_evaluator(op: str) -> GenericEvaluator:
     torch_src, input_shapes = _load_spec(op)
 
-    def _correctness(out, ref):
-        with torch.no_grad():
-            diff = (out - ref).abs()
-            denom = ref.abs().clamp_min(1e-8)
-            rel = diff / denom
-            rel = torch.where(torch.isfinite(rel), rel, torch.zeros_like(rel))
-            max_abs = torch.nan_to_num(diff, nan=0.0, posinf=float('inf'), neginf=float('inf')).max().item()
-            max_rel = rel.max().item()
-        return {"max_abs": max_abs, "max_rel": max_rel}
-
     spec = TaskSpec(
         name=op,
         reference_source=torch_src,
-        correctness_fn=_correctness,
+        correctness_fn=compare_outputs,
         input_shapes=input_shapes,
         flops_fn=None,
     )
@@ -76,8 +67,11 @@ def verifier(src: str, evaluator_obj: GenericEvaluator) -> str:
             return "no metrics returned"
         if "error" in res.metrics:
             return f"runtime error: {res.metrics['error']}"
+        reason = mismatch_reason(res.metrics)
+        if reason:
+            return f"output mismatch: {reason}"
         max_abs = res.metrics.get("max_abs", float("inf"))
-        if max_abs <= 1e-2:
+        if max_abs <= TOLERANCE:
             return ""
         else:
             return f"tolerance exceeded (max_abs={max_abs})"
